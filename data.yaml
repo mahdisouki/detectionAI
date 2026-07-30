@@ -1,0 +1,49 @@
+path: D:/Users/eya20/Downloads/Finall.v2i.yolov8
+train: train/images
+val: valid/images
+test: test/images
+nc: 43
+names:
+  0: American double fridge
+  1: BBQ
+  2: Bike
+  3: Bin
+  4: Book
+  5: Car Battery
+  6: Chest freezer
+  7: Coffee machine
+  8: Cooker hood
+  9: Dinning chair
+  10: Dishwasher
+  11: Dvd Players - Sky Box
+  12: Exercice bike
+  13: External door
+  14: Fan
+  15: Footstool
+  16: Garden chair
+  17: Garden table
+  18: Hob Cooker
+  19: Iron
+  20: Ironing board
+  21: Kettle
+  22: Keyboard
+  23: Lamp
+  24: Laptop
+  25: Lawnmower
+  26: Microwave
+  27: Office printer
+  28: Oven
+  29: Paint cans
+  30: Parasol
+  31: Plant
+  32: Pool
+  33: Pot
+  34: Radiator
+  35: Radio
+  36: Sink
+  37: Standard fridge freezer
+  38: Suitcase
+  39: TV
+  40: Toilet
+  41: Waste bag
+  42: Window

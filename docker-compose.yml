@@ -1,0 +1,18 @@
+services:
+  item-detection:
+    build: .
+    image: item-detection:latest
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      PORT: "8002"
+      # One worker holds one copy of the model (~1 GB RSS). Raise only if the
+      # host has the RAM, and cap OMP_NUM_THREADS so workers stop fighting
+      # over CPU cores.
+      WEB_CONCURRENCY: "1"
+      # OMP_NUM_THREADS: "2"
+      DETECT_CONF: "0.50"
+      DETECT_IOU: "0.45"
+      DETECT_IMGSZ: "640"
+      MAX_UPLOAD_MB: "25"

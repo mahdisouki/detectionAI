@@ -1,0 +1,144 @@
+import base64
+import os
+import tempfile
+from io import BytesIO
+
+import cv2
+from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
+from ultralytics import YOLO
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.environ.get(
+    "MODEL_PATH", os.path.join(BASE_DIR, "models", "best.pt")
+)
+CONF = float(os.environ.get("DETECT_CONF", "0.50"))
+IOU = float(os.environ.get("DETECT_IOU", "0.45"))
+IMGSZ = int(os.environ.get("DETECT_IMGSZ", "640"))
+PORT = int(os.environ.get("PORT", "8002"))
+MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "25"))
+
+app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
+CORS(app)
+
+model = YOLO(MODEL_PATH)
+
+
+def _box_to_detection(box, names):
+    x1, y1, x2, y2 = box.xyxy[0].tolist()
+    class_id = int(box.cls[0])
+    return {
+        "class": names[class_id],
+        "class_id": class_id,
+        "confidence": round(float(box.conf[0]), 4),
+        "bbox": {
+            "x1": round(x1, 2),
+            "y1": round(y1, 2),
+            "x2": round(x2, 2),
+            "y2": round(y2, 2),
+        },
+    }
+
+
+def _wants_annotate():
+    value = request.args.get("annotate", "true").lower()
+    return value in ("1", "true", "yes")
+
+
+def _encode_annotated_image(results):
+    annotated_bgr = results.plot()
+    ok, buffer = cv2.imencode(".jpg", annotated_bgr)
+    if not ok:
+        raise RuntimeError("Failed to encode annotated image")
+    return buffer.tobytes()
+
+
+def _run_detection(path):
+    results = model.predict(
+        path,
+        conf=CONF,
+        iou=IOU,
+        imgsz=IMGSZ,
+        verbose=False,
+    )[0]
+
+    detections = [
+        _box_to_detection(box, results.names) for box in results.boxes
+    ]
+    return results, detections
+
+
+@app.route("/detect", methods=["POST"])
+def detect():
+    if "image" not in request.files:
+        return jsonify({"error": "No image file"}), 400
+
+    file = request.files["image"]
+    if not file.filename:
+        return jsonify({"error": "Empty filename"}), 400
+
+    suffix = os.path.splitext(file.filename)[1] or ".jpg"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        file.save(tmp.name)
+        path = tmp.name
+
+    try:
+        results, detections = _run_detection(path)
+
+        response = {
+            "detections": detections,
+            "count": len(detections),
+        }
+
+        if _wants_annotate():
+            image_bytes = _encode_annotated_image(results)
+            response["annotated_image"] = base64.b64encode(image_bytes).decode("ascii")
+            response["image_format"] = "jpeg"
+
+        return jsonify(response)
+    finally:
+        os.unlink(path)
+
+
+@app.route("/detect/image", methods=["POST"])
+def detect_image():
+    if "image" not in request.files:
+        return jsonify({"error": "No image file"}), 400
+
+    file = request.files["image"]
+    if not file.filename:
+        return jsonify({"error": "Empty filename"}), 400
+
+    suffix = os.path.splitext(file.filename)[1] or ".jpg"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        file.save(tmp.name)
+        path = tmp.name
+
+    try:
+        results, _ = _run_detection(path)
+        image_bytes = _encode_annotated_image(results)
+
+        return send_file(
+            BytesIO(image_bytes),
+            mimetype="image/jpeg",
+            as_attachment=False,
+            download_name="detected.jpg",
+        )
+    finally:
+        os.unlink(path)
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "ok",
+        "model_path": MODEL_PATH,
+        "classes": len(model.names),
+        "class_names": list(model.names.values()),
+    })
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT, debug=False)
