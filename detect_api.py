@@ -1,4 +1,3 @@
-import base64
 import os
 import tempfile
 from io import BytesIO
@@ -42,11 +41,6 @@ def _box_to_detection(box, names):
     }
 
 
-def _wants_annotate():
-    value = request.args.get("annotate", "true").lower()
-    return value in ("1", "true", "yes")
-
-
 def _encode_annotated_image(results):
     annotated_bgr = results.plot()
     ok, buffer = cv2.imencode(".jpg", annotated_bgr)
@@ -85,19 +79,11 @@ def detect():
         path = tmp.name
 
     try:
-        results, detections = _run_detection(path)
-
-        response = {
+        _, detections = _run_detection(path)
+        return jsonify({
             "detections": detections,
             "count": len(detections),
-        }
-
-        if _wants_annotate():
-            image_bytes = _encode_annotated_image(results)
-            response["annotated_image"] = base64.b64encode(image_bytes).decode("ascii")
-            response["image_format"] = "jpeg"
-
-        return jsonify(response)
+        })
     finally:
         os.unlink(path)
 

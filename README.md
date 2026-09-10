@@ -8,7 +8,7 @@ electronics — see `data.yaml` for the full list).
 
 | Method | Route | Returns |
 | --- | --- | --- |
-| `POST` | `/detect` | JSON detections, plus a base64 annotated image unless `?annotate=false` |
+| `POST` | `/detect` | JSON detections (`detections`, `count`) |
 | `POST` | `/detect/image` | The annotated JPEG itself |
 | `GET` | `/health` | Service status, model path, and loaded class names |
 
