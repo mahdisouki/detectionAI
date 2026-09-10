@@ -1,49 +1,90 @@
-path: D:/Users/eya20/Downloads/Finall.v2i.yolov8
+path: D:/Users/eya20/Downloads/filtered_dataset_archive
 train: train/images
 val: valid/images
 test: test/images
-nc: 43
+
+nc: 76
 names:
-  0: American double fridge
-  1: BBQ
-  2: Bike
-  3: Bin
-  4: Book
-  5: Car Battery
-  6: Chest freezer
-  7: Coffee machine
-  8: Cooker hood
-  9: Dinning chair
-  10: Dishwasher
-  11: Dvd Players - Sky Box
-  12: Exercice bike
-  13: External door
-  14: Fan
-  15: Footstool
-  16: Garden chair
-  17: Garden table
-  18: Hob Cooker
-  19: Iron
-  20: Ironing board
-  21: Kettle
-  22: Keyboard
-  23: Lamp
-  24: Laptop
-  25: Lawnmower
-  26: Microwave
-  27: Office printer
-  28: Oven
-  29: Paint cans
-  30: Parasol
-  31: Plant
-  32: Pool
-  33: Pot
-  34: Radiator
-  35: Radio
-  36: Sink
-  37: Standard fridge freezer
-  38: Suitcase
-  39: TV
-  40: Toilet
-  41: Waste bag
-  42: Window
+- 2 seater sofa
+- 3 seater sofa
+- American double fridge
+- Armchair
+- BBQ
+- Bathtub
+- Bed with matress
+- Bedside table
+- Bike
+- Bin
+- Book
+- Bookshelf
+- Bricks
+- Car Battery
+- Chest freezer
+- Chest of drawers
+- Coffee machine
+- Commercial fridge
+- Computer
+- Cooker hood
+- Corner sofa
+- Cot
+- Desk
+- Dinning chair
+- Dinning table
+- Dishwasher
+- Double bed frame
+- Double cooker
+- Double matresse
+- Dvd Players - Sky Box
+- Exercice bike
+- External door
+- Fan
+- Footstool
+- Garden chair
+- Garden table
+- Hob Cooker
+- Iron
+- Ironing board
+- Kettle
+- Keyboard
+- Lamp
+- Laptop
+- Lawnmower
+- Microwave
+- Mini fridge
+- Mouse
+- Office chair
+- Office printer
+- Oven
+- Paint cans
+- Parasol
+- Plant
+- Pool
+- Pot
+- Printer
+- Radiator
+- Radio
+- Sewing machine
+- Shower tray
+- Single bed frame
+- Sink
+- Standard fridge freezer
+- Storage heater
+- Suitcase
+- TV
+- Toaster
+- Toilet
+- Treadmill
+- Vaccum
+- Washing machine OR Tumble dryer
+- Waste bag
+- Window
+- Wooden door
+- Wooden pallet
+- single matress
+
+roboflow:
+  license: CC BY 4.0
+  project: finall-zya1o
+  url: https://app.roboflow.com/aiproject-7kwsp/finall-zya1o/4
+  version: 4
+  workspace: aiproject-7kwsp
