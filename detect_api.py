@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.environ.get(
     "MODEL_PATH", os.path.join(BASE_DIR, "models", "best.pt")
 )
-CONF = float(os.environ.get("DETECT_CONF", "0.50"))
+CONF = float(os.environ.get("DETECT_CONF", "0.30"))
 IOU = float(os.environ.get("DETECT_IOU", "0.45"))
 IMGSZ = int(os.environ.get("DETECT_IMGSZ", "640"))
 PORT = int(os.environ.get("PORT", "8002"))
@@ -23,6 +23,9 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 CORS(app)
 
 model = YOLO(MODEL_PATH)
+model.overrides["conf"] = CONF
+model.overrides["iou"] = IOU
+model.overrides["imgsz"] = IMGSZ
 
 
 def _box_to_detection(box, names):
@@ -49,6 +52,14 @@ def _encode_annotated_image(results):
     return buffer.tobytes()
 
 
+def _apply_conf_filter(results):
+    """Drop boxes below CONF. Ultralytics can keep default-threshold (0.25) boxes."""
+    if results.boxes is None or len(results.boxes) == 0:
+        return results
+    results.boxes = results.boxes[results.boxes.conf >= CONF]
+    return results
+
+
 def _run_detection(path):
     results = model.predict(
         path,
@@ -57,6 +68,7 @@ def _run_detection(path):
         imgsz=IMGSZ,
         verbose=False,
     )[0]
+    results = _apply_conf_filter(results)
 
     detections = [
         _box_to_detection(box, results.names) for box in results.boxes
@@ -83,6 +95,7 @@ def detect():
         return jsonify({
             "detections": detections,
             "count": len(detections),
+            "conf": CONF,
         })
     finally:
         os.unlink(path)
@@ -121,6 +134,9 @@ def health():
     return jsonify({
         "status": "ok",
         "model_path": MODEL_PATH,
+        "conf": CONF,
+        "iou": IOU,
+        "imgsz": IMGSZ,
         "classes": len(model.names),
         "class_names": list(model.names.values()),
     })
